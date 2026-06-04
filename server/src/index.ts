@@ -1,0 +1,126 @@
+﻿import 'dotenv/config';
+import path from 'node:path';
+import fs from 'node:fs';
+import { createApp } from './app';
+import {
+  ensureWritableDir,
+  getDataDir,
+  getDataRoot,
+  getUploadDir,
+  getUploadsRoot,
+} from './services/uploadPaths';
+
+// Create upload and data directories on startup
+const uploadsDir = getUploadsRoot();
+const photosDir = getUploadDir('photos');
+const filesDir = getUploadDir('files');
+const coversDir = getUploadDir('covers');
+const avatarsDir = getUploadDir('avatars');
+const dataDir = getDataRoot();
+const backupsDir = getDataDir('backups');
+const tmpDir = getDataDir('tmp');
+
+try {
+  [dataDir, uploadsDir, photosDir, filesDir, coversDir, avatarsDir, backupsDir, tmpDir]
+    .forEach(ensureWritableDir);
+} catch (err) {
+  console.error('[Startup] Data or upload directory is not writable:', err);
+  process.exit(1);
+}
+
+const app = createApp();
+
+import * as scheduler from './scheduler';
+import { getAppUrl, getMcpSafeUrl } from './services/notifications';
+
+const PORT = Number(process.env.PORT) || 3001;
+const HOST = process.env.HOST;
+const APP_VERSION: string = process.env.APP_VERSION || (require('../package.json') as { version: string }).version;
+
+const onListen = () => {
+  const { logInfo: sLogInfo, logWarn: sLogWarn } = require('./services/auditLog');
+  const LOG_LVL = (process.env.LOG_LEVEL || 'info').toLowerCase();
+  const tz = process.env.TZ || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const origins = process.env.ALLOWED_ORIGINS || '(same-origin)';
+  const appUrl = getAppUrl();
+  const resolvedAppUrl = getMcpSafeUrl();
+  const banner = [
+    '------------------------------------------------------------------------------------------------------------------',
+    '  TripTrace API started',
+    `  Version         ${APP_VERSION}`,
+    ...(HOST ? [`  Host:           ${HOST}`] : []),
+    `  Container Port: ${PORT}`,
+    `  App URL:        ${appUrl}`,
+    `  Environment:    ${process.env.NODE_ENV?.toLowerCase() || 'development'}`,
+    `  Timezone:       ${tz}`,
+    `  Origins:        ${origins}`,
+    `  Log level:      ${LOG_LVL}`,
+    `  Log file:       /app/data/logs/triptrace.log`,
+    `  PID:            ${process.pid}`,
+    `  User:           uid=${process.getuid?.()} gid=${process.getgid?.()}`,
+    '------------------------------------------------------------------------------------------------------------------',
+  ];
+  banner.forEach(l => console.log(l));
+  if (process.env.APP_URL) {
+    let parsedAppUrl: URL | null = null;
+    try { parsedAppUrl = new URL(process.env.APP_URL); } catch { /* invalid */ }
+
+    if (!parsedAppUrl) {
+      sLogWarn(`APP_URL: "${process.env.APP_URL}" is not a valid URL -it will be ignored.`);
+    }
+
+    const mcpSafe = parsedAppUrl !== null && (
+      parsedAppUrl.protocol === 'https:' ||
+      parsedAppUrl.hostname === 'localhost' ||
+      parsedAppUrl.hostname === '127.0.0.1'
+    );
+    if (!mcpSafe) {
+      sLogWarn(`APP_URL: not MCP-safe (requires https:// or http://localhost) -MCP will use ${resolvedAppUrl}.`);
+    }
+  }
+  if (process.env.DEMO_MODE?.toLowerCase() === 'true') sLogInfo('Demo mode: ENABLED');
+  if (process.env.DEMO_MODE?.toLowerCase() === 'true' && process.env.NODE_ENV?.toLowerCase() === 'production') {
+    sLogWarn('SECURITY WARNING: DEMO_MODE is enabled in production!');
+  }
+  scheduler.start();
+  scheduler.startTripReminders();
+  scheduler.startTodoReminders();
+  scheduler.startVersionCheck();
+  scheduler.startDemoReset();
+  scheduler.startIdempotencyCleanup();
+  scheduler.startTrekPhotoCacheCleanup();
+  const { startTokenCleanup } = require('./services/ephemeralTokens');
+  startTokenCleanup();
+  import('./websocket').then(({ setupWebSocket }) => {
+    setupWebSocket(server);
+  });
+};
+
+const server = HOST
+  ? app.listen(PORT, HOST, onListen)
+  : app.listen(PORT, onListen);
+
+// Graceful shutdown
+function shutdown(signal: string): void {
+  const { logInfo: sLogInfo, logError: sLogError } = require('./services/auditLog');
+  const { closeMcpSessions } = require('./mcp');
+  sLogInfo(`${signal} received -shutting down gracefully...`);
+  scheduler.stop();
+  closeMcpSessions();
+  server.close(() => {
+    sLogInfo('HTTP server closed');
+    const { closeDb } = require('./db/database');
+    closeDb();
+    sLogInfo('Shutdown complete');
+    process.exit(0);
+  });
+  setTimeout(() => {
+    sLogError('Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+export default app;

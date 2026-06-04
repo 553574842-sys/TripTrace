@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="220" viewBox="0 0 720 220" role="img" aria-labelledby="title desc">
+  <title id="title">TripTrace / 旅迹</title>
+  <desc id="desc">TripTrace brand header for dark backgrounds.</desc>
+  <defs>
+    <linearGradient id="pin" x1="58" y1="38" x2="188" y2="184" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="route" x1="56" y1="152" x2="198" y2="68" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="220" rx="44" fill="#0f172a"/>
+  <g transform="translate(42 28)">
+    <path d="M82 0c45.3 0 82 36.7 82 82 0 58.6-82 134-82 134S0 140.6 0 82C0 36.7 36.7 0 82 0Z" fill="url(#pin)"/>
+    <circle cx="82" cy="80" r="31" fill="#ecfeff"/>
+    <path d="M32 142c36-45 79-34 99-66 11-18 .5-36-21-35-16 .8-26 11-30 26" fill="none" stroke="url(#route)" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="32" cy="142" r="11" fill="#f97316"/>
+    <circle cx="168" cy="48" r="11" fill="#fbbf24"/>
+  </g>
+  <g font-family="Inter, 'Segoe UI', Arial, sans-serif">
+    <text x="250" y="95" fill="#ffffff" font-size="58" font-weight="850">TripTrace</text>
+    <text x="254" y="145" fill="#99f6e4" font-size="34" font-weight="800" letter-spacing="4">旅迹</text>
+    <text x="368" y="145" fill="#cbd5e1" font-size="20" font-weight="500">和重要的人一起，把每一段旅程安排清楚。</text>
+  </g>
+</svg>

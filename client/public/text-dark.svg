@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="92" viewBox="0 0 360 92" role="img" aria-labelledby="title desc">
+  <title id="title">TripTrace / 旅迹 wordmark</title>
+  <desc id="desc">TripTrace wordmark with Chinese name.</desc>
+  <g font-family="Inter, 'Segoe UI', Arial, sans-serif">
+    <text x="0" y="45" fill="#111827" font-size="42" font-weight="800">TripTrace</text>
+    <text x="2" y="78" fill="#0f766e" font-size="24" font-weight="700" letter-spacing="2">旅迹</text>
+    <path d="M83 70h92" stroke="#ea580c" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 13"/>
+    <circle cx="194" cy="70" r="6" fill="#f59e0b"/>
+  </g>
+</svg>

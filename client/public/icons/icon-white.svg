@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">TripTrace icon white</title>
+  <desc id="desc">A white TripTrace route pin mark.</desc>
+  <rect width="512" height="512" rx="112" fill="none"/>
+  <path d="M256 58c86.2 0 156 69.8 156 156 0 111.8-156 240-156 240S100 325.8 100 214C100 127.8 169.8 58 256 58Z" fill="#ffffff"/>
+  <circle cx="256" cy="207" r="58" fill="#0f766e"/>
+  <path d="M154 320c62-78 139-54 173-113 20-34-4-66-43-64-30 2-48 21-54 49" fill="none" stroke="#f97316" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="154" cy="320" r="24" fill="#f97316"/>
+  <circle cx="370" cy="142" r="24" fill="#fbbf24"/>
+</svg>
