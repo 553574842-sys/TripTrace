@@ -25,7 +25,8 @@ interface AppConfig {
 
 export default function LoginPage(): React.ReactElement {
   const { t, language } = useTranslation()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const initialAuthMode = window.location.pathname.startsWith('/register') ? 'register' : 'login'
+  const [mode, setMode] = useState<'login' | 'register'>(initialAuthMode)
   const [username, setUsername] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
@@ -255,8 +256,7 @@ export default function LoginPage(): React.ReactElement {
     }
   }
 
-  const registrationEnabled = appConfig?.password_registration ?? appConfig?.allow_registration ?? false
-  const showRegisterOption = (registrationEnabled || !appConfig?.has_users || inviteValid) && (appConfig?.setup_complete !== false || !appConfig?.has_users)
+  const showRegisterOption = !appConfig?.demo_mode
 
   // In OIDC-only mode, show a minimal page that redirects directly to the IdP
   const oidcOnly = !appConfig?.password_login && appConfig?.oidc_login && appConfig?.oidc_configured
