@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { authApi } from '../api/client'
+import { authApi, clearAuthToken, setAuthToken } from '../api/client'
 import { connect, disconnect } from '../api/websocket'
 import type { User } from '../types'
 import { getApiErrorMessage } from '../types'
@@ -93,6 +93,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: false, error: null })
         return { mfa_required: true as const, mfa_token: data.mfa_token }
       }
+      setAuthToken(data.token)
       set({
         user: data.user,
         isAuthenticated: true,
@@ -117,6 +118,7 @@ export const useAuthStore = create<AuthState>()(
     set({ isLoading: true, error: null })
     try {
       const data = await authApi.verifyMfaLogin({ mfa_token: mfaToken, code: code.replace(/\s/g, '') })
+      setAuthToken(data.token)
       set({
         user: data.user,
         isAuthenticated: true,
@@ -141,6 +143,7 @@ export const useAuthStore = create<AuthState>()(
     set({ isLoading: true, error: null })
     try {
       const data = await authApi.register({ username, email, password, invite_token })
+      setAuthToken(data.token)
       set({
         user: data.user,
         isAuthenticated: true,
@@ -160,6 +163,7 @@ export const useAuthStore = create<AuthState>()(
 
   logout: () => {
     disconnect()
+    clearAuthToken()
     useSystemNoticeStore.getState().reset()
     // Tell server to clear the httpOnly cookie
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
@@ -196,6 +200,7 @@ export const useAuthStore = create<AuthState>()(
       const isAuthError = err && typeof err === 'object' && 'response' in err &&
         (err as { response?: { status?: number } }).response?.status === 401
       if (isAuthError) {
+        clearAuthToken()
         set({
           user: null,
           isAuthenticated: false,
@@ -275,6 +280,7 @@ export const useAuthStore = create<AuthState>()(
     set({ isLoading: true, error: null })
     try {
       const data = await authApi.demoLogin()
+      setAuthToken(data.token)
       set({
         user: data.user,
         isAuthenticated: true,

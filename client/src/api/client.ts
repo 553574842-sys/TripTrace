@@ -20,6 +20,27 @@ const rateLimitTranslations: Record<string, Record<string, string | unknown>> = 
   en, br, de, es, fr, it, nl, pl, cs, hu, ru, zh, 'zh-TW': zhTw, ar,
 }
 
+const AUTH_TOKEN_KEY = 'triptrace_session_token'
+
+export function setAuthToken(token: string | null | undefined): void {
+  try {
+    if (token) sessionStorage.setItem(AUTH_TOKEN_KEY, token)
+    else sessionStorage.removeItem(AUTH_TOKEN_KEY)
+  } catch { /* ignore unavailable storage */ }
+}
+
+export function clearAuthToken(): void {
+  setAuthToken(null)
+}
+
+function getAuthToken(): string | null {
+  try {
+    return sessionStorage.getItem(AUTH_TOKEN_KEY)
+  } catch {
+    return null
+  }
+}
+
 function translateRateLimit(): string {
   const fallback = 'Too many attempts. Please try again later.'
   try {
@@ -49,6 +70,10 @@ apiClient.interceptors.request.use(
       const sid = getSocketId()
       if (sid) {
         config.headers['X-Socket-Id'] = sid
+      }
+      const token = getAuthToken()
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`
       }
       // Attach a per-request idempotency key to all write operations so the
       // server can deduplicate retried requests (e.g. network blips).
