@@ -251,7 +251,8 @@ export default function LoginPage(): React.ReactElement {
     }
   }
 
-  const showRegisterOption = (appConfig?.password_registration || !appConfig?.has_users || inviteValid) && (appConfig?.setup_complete !== false || !appConfig?.has_users)
+  const registrationEnabled = appConfig?.password_registration ?? appConfig?.allow_registration ?? false
+  const showRegisterOption = (registrationEnabled || !appConfig?.has_users || inviteValid) && (appConfig?.setup_complete !== false || !appConfig?.has_users)
 
   // In OIDC-only mode, show a minimal page that redirects directly to the IdP
   const oidcOnly = !appConfig?.password_login && appConfig?.oidc_login && appConfig?.oidc_configured
