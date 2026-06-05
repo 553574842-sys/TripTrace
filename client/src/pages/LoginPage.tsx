@@ -68,6 +68,10 @@ export default function LoginPage(): React.ReactElement {
     const oidcCode = params.get('oidc_code')
     const oidcError = params.get('oidc_error')
 
+    if (window.location.pathname.startsWith('/register')) {
+      setMode('register')
+    }
+
     if (invite) {
       setInviteToken(invite)
       setMode('register')
